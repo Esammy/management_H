@@ -1,0 +1,29 @@
+# docker-compose.yml
+version: '3'
+
+services:
+  web:
+    build: .
+    command: gunicorn hospital_api.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+  db:
+    image: mongo
+    volumes:
+      - mongodb_data:/data/db
+  redis:
+    image: redis
+  celery:
+    build: .
+    command: celery -A hospital_api worker --loglevel=info
+    depends_on:
+      - redis
+      - db
+
+volumes:
+  mongodb_data:
